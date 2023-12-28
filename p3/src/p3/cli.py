@@ -1,6 +1,6 @@
 import click
 from pathlib import Path
-from p3.ranking import rank_and_save
+from p3.ranking import main
 from p3.typings import EmbedderConfig
 
 
@@ -38,6 +38,8 @@ def cli():
             "bert-base-cased",
             "bert-large-cased",
             "bert-large-uncased-whole-word-masking",
+            "distilbert-base-uncased",
+            "albert-base-v2",
             "tdidf",
             "bag-of-words",
         ]
@@ -57,8 +59,19 @@ def cli():
     default="hf",
     required=False,
 )
-def rank(filepath: Path, embedder_config: EmbedderConfig):
-    rank_and_save(filepath, embedder_config)
+@click.option(
+    "-q",
+    "--query",
+    type=str,
+    required=True,
+)
+@click.option(
+    "--debug",
+    is_flag=True,
+    help="Enable DEBUG option (run pipeline on a small portion of the csv file)",
+)
+def rank(query: str, filepath: Path, embedder_config: EmbedderConfig, debug: bool):
+    main(query, filepath, embedder_config, debug)
 
 
 if __name__ == "__main__":

@@ -72,8 +72,8 @@ class HFModelEmbedder(Embedder):
         outputs = self.model(**text)
         return outputs.last_hidden_state.mean(dim=1).squeeze().detach().cpu().numpy()
 
-    def embed_sentences(self, text: List[str]) -> List[NDArray[np.float_]]:
-        return [self.embed_sentence(sentence) for sentence in text]
+    def embed_sentences(self, text: List[str]) -> NDArray[np.float_]:
+        return np.stack([self.embed_sentence(sentence) for sentence in text])
 
 
 class SKModelEmbedder(Embedder):
@@ -87,15 +87,15 @@ class SKModelEmbedder(Embedder):
     def embed_sentence(self, text: str) -> NDArray[np.float_]:
         return self.model.fit_transform([text])
 
-    def embed_sentences(self, text: List[str]) -> List[NDArray[np.float_]]:
+    def embed_sentences(self, text: List[str]) -> NDArray[np.float_]:
         return self.model.fit_transform(text)
 
 
 def create_embedder(model_type, **kwargs):
     if model_type == "hf":
-        embedder = HFModelEmbedder(model_type, **kwargs)
+        embedder = HFModelEmbedder(**kwargs)
     elif model_type == "sk":
-        embedder = SKModelEmbedder(model_type, **kwargs)
+        embedder = SKModelEmbedder(**kwargs)
     else:
         raise ValueError(f"Unsupported model type: {model_type}")
     return embedder
