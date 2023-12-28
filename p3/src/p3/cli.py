@@ -1,7 +1,7 @@
 import click
 from pathlib import Path
-from p3.ranking import main
-from p3.typings import EmbedderConfig
+from src.p3.ranking import main
+from src.p3.typings import EmbedderConfig
 
 
 class EmbedderConfigCommand(click.Command):

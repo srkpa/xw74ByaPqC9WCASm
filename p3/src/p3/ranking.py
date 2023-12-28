@@ -1,33 +1,37 @@
 from pathlib import Path
-from p3.utils import (
+from src.p3.utils import (
     load_csv_to_dataframe,
     apply_transformations_to_columns,
     compose_and_return,
     calculate_cosine_similarities,
 )
-from p3.preprocessing import *
+from src.p3.preprocessing import *
 from loguru import logger
-from p3.embedding import create_embedder
-from p3.typings import EmbedderConfig
+from src.p3.embedding import create_embedder
+from src.p3.typings import EmbedderConfig
 from sklearn.preprocessing import minmax_scale
 import numpy as np
-
 from pathlib import Path
-from p3.utils import (
+from src.p3.utils import (
     load_csv_to_dataframe,
     apply_transformations_to_columns,
     compose_and_return,
     calculate_cosine_similarities,
 )
-from p3.preprocessing import *
+from src.p3.preprocessing import *
 from loguru import logger
-from p3.embedding import create_embedder
-from p3.typings import EmbedderConfig
+from src.p3.embedding import create_embedder
+from src.p3.typings import EmbedderConfig
 from sklearn.preprocessing import minmax_scale
 import numpy as np
+import pandas as pd
+from typing import Tuple, List, Optional
+from numpy.typing import NDArray
 
 
-def preprocess_data(data, query: str):
+def preprocess_data(
+    data: pd.DataFrame, query: Optional[str] = None
+) -> Tuple[pd.DataFrame, str | None]:
     configure_nltk_data_path()
 
     preprocessing_pipeline = compose_and_return(
@@ -54,25 +58,30 @@ def preprocess_data(data, query: str):
         data_preprocessed[["connection"]].to_numpy(), feature_range=(0.5, 1)
     )
 
-    query_preprocessed = preprocessing_pipeline(query)
+    query_preprocessed = preprocessing_pipeline(query) if query else None
     return data_preprocessed, query_preprocessed
 
 
-def embed_data(job_titles, query, embedder_config):
+def embed_data(
+    job_titles: List[str], embedder_config: EmbedderConfig, query: Optional[str] = None
+):
     embedder = create_embedder(
         model_type=embedder_config["type"],
         pretrained_model_name_or_path=embedder_config["name"],
     )
 
-    query_embedding = embedder.embed_sentence(query).reshape(1, -1)
+    query_embedding = embedder.embed_sentence(query).reshape(1, -1) if query else None
 
     job_title_embeddings = embedder.embed_sentences(job_titles)
     return job_title_embeddings, query_embedding
 
 
 def calculate_fitness_scores(
-    query_embedding, job_title_embeddings, connection_scaled, weights=None
-):
+    query_embedding: NDArray[np.float_],
+    job_title_embeddings: NDArray[np.float_],
+    connection_scaled: NDArray[np.float_],
+    weights: Optional[List[float]] = None,
+) -> NDArray[np.float_]:
     if weights is None:
         weights = [0.9, 0.1]
 
@@ -95,9 +104,19 @@ def main(query: str, file_path: Path, embedder_config: EmbedderConfig, debug: bo
 
     data_preprocessed, query_preprocessed = preprocess_data(data, query)
     job_title_embeddings, query_embedding = embed_data(
-        data_preprocessed["job_title"].to_numpy(), query_preprocessed, embedder_config
+        data_preprocessed["job_title"].to_numpy(), embedder_config, query_preprocessed
     )
 
+    print(
+        job_title_embeddings.shape,
+        data_preprocessed[["connection_scaled"]].to_numpy().shape,
+    )
+
+    print(
+        np.hstack(
+            [job_title_embeddings, data_preprocessed[["connection_scaled"]].to_numpy()],
+        ).shape
+    )
     scores = calculate_fitness_scores(
         query_embedding,
         job_title_embeddings,
@@ -105,6 +124,8 @@ def main(query: str, file_path: Path, embedder_config: EmbedderConfig, debug: bo
     )
 
     data["fit"] = scores
-    data.sort_values(by="fit", ascending=False, inplace=True)
+    data["query"] = query
+    data["qId"] = data["query"].astype("category").cat.codes
+    data.sort_values(by=["qId", "fit"], ascending=False, inplace=True)
 
     print(data)

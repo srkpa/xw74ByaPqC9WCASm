@@ -4,7 +4,7 @@ version = "0.1.0"
 description = ""
 authors = ["srkpa <kpanou.rogia@gmail.com>"]
 readme = "README.md"
-packages = [{include = "p3", from = "src"}]
+packages = [{include = "src"}]
 
 [tool.poetry.dependencies]
 python = "^3.11"
@@ -14,9 +14,11 @@ transformers = "^4.35.2"
 pandas = "^2.1.4"
 nltk = "^3.8.1"
 torch = "^2.1.2"
+xgboost = "^2.0.3"
+python-terrier = {git = "https://github.com/terrier-org/pyterrier.git"}
 
 [tool.poetry.scripts]
-cli = "p3.cli:cli"
+cli = "src.p3.cli:cli"
 
 [tool.poetry.group.dev.dependencies]
 click = "^8.1.7"
