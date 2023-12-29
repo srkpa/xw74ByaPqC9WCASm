@@ -1,39 +1,40 @@
 from pathlib import Path
-from src.p3.utils import (
+from src.manual_ranking.utils import (
     load_csv_to_dataframe,
     apply_transformations_to_columns,
     compose_and_return,
     calculate_cosine_similarities,
 )
-from src.p3.preprocessing import *
+from src.manual_ranking.preprocessing import *
 from loguru import logger
-from src.p3.embedding import create_embedder
-from src.p3.typings import EmbedderConfig
+from src.manual_ranking.embedding import create_embedder
+from src.manual_ranking.typings import EmbedderConfig
 from sklearn.preprocessing import minmax_scale
 import numpy as np
 from pathlib import Path
-from src.p3.utils import (
+from src.manual_ranking.utils import (
     load_csv_to_dataframe,
     apply_transformations_to_columns,
     compose_and_return,
     calculate_cosine_similarities,
 )
-from src.p3.preprocessing import *
+from src.manual_ranking.preprocessing import *
 from loguru import logger
-from src.p3.embedding import create_embedder
-from src.p3.typings import EmbedderConfig
+from src.manual_ranking.embedding import create_embedder
+from src.manual_ranking.typings import EmbedderConfig
 from sklearn.preprocessing import minmax_scale
 import numpy as np
 import pandas as pd
 from typing import Tuple, List, Optional
 from numpy.typing import NDArray
+from src.config import DATA_DIR
 
 
 def preprocess_data(
     data: pd.DataFrame, query: Optional[str] = None
 ) -> Tuple[pd.DataFrame, str | None]:
     configure_nltk_data_path()
-
+    # TODO : Remove redundant lines codes - Merge interface between modules
     preprocessing_pipeline = compose_and_return(
         lowercase,
         remove_special_chars,
@@ -100,22 +101,11 @@ def main(query: str, file_path: Path, embedder_config: EmbedderConfig, debug: bo
     data = load_csv_to_dataframe(file_path=file_path)
 
     if debug:
-        data = data.head(n=5)
+        data = data.head(n=10)
 
     data_preprocessed, query_preprocessed = preprocess_data(data, query)
     job_title_embeddings, query_embedding = embed_data(
         data_preprocessed["job_title"].to_numpy(), embedder_config, query_preprocessed
-    )
-
-    print(
-        job_title_embeddings.shape,
-        data_preprocessed[["connection_scaled"]].to_numpy().shape,
-    )
-
-    print(
-        np.hstack(
-            [job_title_embeddings, data_preprocessed[["connection_scaled"]].to_numpy()],
-        ).shape
     )
     scores = calculate_fitness_scores(
         query_embedding,
@@ -126,6 +116,7 @@ def main(query: str, file_path: Path, embedder_config: EmbedderConfig, debug: bo
     data["fit"] = scores
     data["query"] = query
     data["qId"] = data["query"].astype("category").cat.codes
-    data.sort_values(by=["qId", "fit"], ascending=False, inplace=True)
 
-    print(data)
+    data.groupby("qId", group_keys=False).apply(
+        lambda x: x.sort_values("fit", ascending=False)
+    ).to_csv(f"{DATA_DIR}/{file_path.stem}-f.csv", index=False)

@@ -3,7 +3,6 @@ name = "p3"
 version = "0.1.0"
 description = ""
 authors = ["srkpa <kpanou.rogia@gmail.com>"]
-readme = "README.md"
 packages = [{include = "src"}]
 
 [tool.poetry.dependencies]
@@ -18,7 +17,7 @@ xgboost = "^2.0.3"
 python-terrier = {git = "https://github.com/terrier-org/pyterrier.git"}
 
 [tool.poetry.scripts]
-cli = "src.p3.cli:cli"
+cli = "src.cli:cli"
 
 [tool.poetry.group.dev.dependencies]
 click = "^8.1.7"
