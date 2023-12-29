@@ -55,12 +55,7 @@ class EmbedderConfigCommand(click.Group):
     default="hf",
     required=False,
 )
-@click.option(
-    "-q",
-    "--query",
-    type=str,
-    required=True,
-)
+@click.option("-q", "--query", type=str, required=False, default=None)
 @click.option(
     "--debug",
     is_flag=True,

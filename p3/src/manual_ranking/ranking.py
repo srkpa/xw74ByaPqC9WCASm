@@ -117,6 +117,12 @@ def main(query: str, file_path: Path, embedder_config: EmbedderConfig, debug: bo
     data["query"] = query
     data["qId"] = data["query"].astype("category").cat.codes
 
+    print(
+        data.groupby("qId", group_keys=False).apply(
+            lambda x: x.sort_values("fit", ascending=False)
+        )
+    )
+
     data.groupby("qId", group_keys=False).apply(
         lambda x: x.sort_values("fit", ascending=False)
-    ).to_csv(f"{DATA_DIR}/{file_path.stem}-f.csv", index=False)
+    ).to_csv(f"{DATA_DIR}/{file_path.stem}.csv", index=False)

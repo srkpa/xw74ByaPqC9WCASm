@@ -15,9 +15,11 @@ nltk = "^3.8.1"
 torch = "^2.1.2"
 xgboost = "^2.0.3"
 python-terrier = {git = "https://github.com/terrier-org/pyterrier.git"}
+watchdog = "^3.0.0"
 
 [tool.poetry.scripts]
 cli = "src.cli:cli"
+watch = "src.watcher:watch"
 
 [tool.poetry.group.dev.dependencies]
 click = "^8.1.7"

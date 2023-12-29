@@ -7,6 +7,7 @@ def main(file_path: Path, debug: bool, embbeder_config: EmbedderConfig):
     )
     print()
     most_recent_model = find_latest_xgboost_model(MODELS_DIR)
+    print(f"Most recent model saved at : {most_recent_model}")
     fitted_model = train(
         X=X, y=y, qIDs=qIds, xgb_model=most_recent_model
     )  # incremental learning
