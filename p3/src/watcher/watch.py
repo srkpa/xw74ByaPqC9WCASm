@@ -3,7 +3,7 @@ from watchdog.observers import Observer
 from watchdog.events import PatternMatchingEventHandler
 from datetime import datetime
 from src.config import DATA_DIR, LOG_FILE_PATH
-from src.learning_to_rank import train, utils
+from src.learning_to_rank import train
 from src.manual_ranking.typings import EmbedderConfig
 
 

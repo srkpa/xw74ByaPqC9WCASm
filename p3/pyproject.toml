@@ -19,7 +19,7 @@ watchdog = "^3.0.0"
 
 [tool.poetry.scripts]
 cli = "src.cli:cli"
-watch = "src.watcher:watch"
+watch = "src.watcher.watch:watch"
 
 [tool.poetry.group.dev.dependencies]
 click = "^8.1.7"
