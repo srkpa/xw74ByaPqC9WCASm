@@ -11,18 +11,30 @@ poetry install
 ```
 
 ## Usage
-La pipeline contient trois modules:
-1. Permet de calculer semi manuellement les scores de fitness en utilisant le csv fourni
-2. Permet d'entrainer un premier modele avec les score calculés, et
-3. Permet de suivre le fichier des scores, et de déclencher à chaque modification (starring) le retrainement du modele. L'aopprentissage est incremental, donc on reutiliser le plus recent model pour commencer.
+The pipeline comprises three key modules:
+1. Manually calculate fitness scores using the provided CSV.
+2. Train an initial model with the calculated fitness scores.
+3. Monitor the csv file and trigger retraining of the model upon modification (starring). Learning is incremental, so the most recent model is reused to start the training.
 
 ## 1. Fitness scores
-Le fitness score est une moyenne pondere de e. La ponderation par d.faut utiliser est .9 et .1. Personnellement je pense que le job title (experience de travail) est plus importante que le nombre de connection qui est pour moi un plus. Entre deux candidats, je prefere le candidat avec le plus d'experience même s'il a moins de connection. Mais les poids ne sont que des parametres, et peuvent etre ajustés.
-fitness =  0.9 x importance_job_tile + 0.1 x importance_connection.
-importance_job_tile =  cosine (job_title[vec], query[vec]) (betwen 0..1)
-importance_connection =  sklearn.MINMAX(connection_COL, min=0.5, max=1) (between 0.5..1)
+The fitness score is computed as a weighted average with default weights of 0.9 and 0.1, but these weights can be adjusted. In my personal perspective, I assign higher importance to job title (work experience) compared to the number of connections. Given two candidates, I favor the one with more experience, even if they have fewer connections.
 
-COL[vec] =  EMBEDDER(preprocessing(COL)). Embedder est fixe avec l'option -en/-et pour choisir un modele pretrainé de hugging face ou un vectorizer de sklearn comme countVctorizer ou Tdif
+The fitness score formula is given by:
+
+> fitness = 0.9 × importance_job_tile + 0.1 × importance_connection
+
+The importance of job title is determined using cosine similarity between the job title vector and the query vector, ranging from 0 to 1:
+
+> importance_job_tile =  cosine (job_title[vec], query[vec])
+
+Connection importance is computed using Min-Max scaling on the connection column (ranging from 0.5 to 1).
+> importance_connection =  sklearn.MINMAX(connection_COL, min=0.5, max=1) 
+with :
+> COL[vec] = EMBEDDER(preprocessing(COL)). 
+
+The Embedder is choosed with the option ```−en/−et``` to choose a pretrained model from Hugging Face or a vectorizer from sklearn, such as CountVectorizer or TfidfVectorizer.
+
+The command to run this module is as follows:
 
 ```bash
 (p3-py3.11) (base) \p3>poetry run cli -f  ".data\potential-talents - Aspiring human resources - seeking human resources.csv" -en albert-base-v2 -q "Aspiring human resources" --debug rank
@@ -52,16 +64,19 @@ COL[vec] =  EMBEDDER(preprocessing(COL)). Embedder est fixe avec l'option -en/-e
 ```
 
 ## 2. XGBoost ranker
-Le modele utiliser vient de xgboost, c'est xgboost Ranker avec des parametres par défaut.
+
+We utilize an XGBoost Ranker with default parameters and train the model with the fitness scores.
+
+The command to run this module is as follows:
 ```bash
 (p3-py3.11) (base) \p3>poetry run cli -f  "test.csv" -en albert-base-v2  --debug fit
 | id | job_title                          | location                  | conn | fit| query                     | qId | relevance_score  |
-|----|------------------------------------|---------------------------|------------|----|---------------------------|------------------------|
-| 8  | HR Senior Specialist               | San Francisco Bay Area    | 500+ | 0.919851 | Aspiring human resources  | 0   | 1                |
-| 6  | Aspiring Human Resources Specialist| Greater New York City Area| 1    | 0.918608 | Aspiring human resources  | 0   | 2                |
-| 10 | Seeking Human Resources HRIS ...   | Greater Philadelphia Area | 500+ | 0.891796 | Aspiring human resources  | 0   | 3                |
-| 4  | People Development Coordinator ... | Denton, Texas             | 500+ | 0.889278 | Aspiring human resources  | 0   | 4                |
-| 2  | Native English Teacher at EPIK ... | Kanada                    | 500+ | 0.889178 | Aspiring human resources  | 0   | 5                |
+|----|------------------------------------|---------------------------|------------|----|---------------------------|------------------|
+| 8  | HR Senior Specialist               | San Francisco Bay Area    | 500+ | 0.919851 | Aspiring human resources  | 0   | 1          |
+| 6  | Aspiring Human Resources Specialist| Greater New York City Area| 1    | 0.918608 | Aspiring human resources  | 0   | 2          |
+| 10 | Seeking Human Resources HRIS ...   | Greater Philadelphia Area | 500+ | 0.891796 | Aspiring human resources  | 0   | 3          |
+| 4  | People Development Coordinator ... | Denton, Texas             | 500+ | 0.889278 | Aspiring human resources  | 0   | 4          |
+| 2  | Native English Teacher at EPIK ... | Kanada                    | 500+ | 0.889178 | Aspiring human resources  | 0   | 5          |
 
 
 Most recent model saved at : ..\.models\model_20231229064819.json
@@ -75,26 +90,41 @@ Result: rank:ndcg -> 0.5443434449057798
 Model saved at : ..\.models/model_20231229065022.json
 ```
 ## 3. WatchDog
-Periodically retrain the model with new data et enregistrer la sortie dans un fichier journal.
 
-## RECAP
+Periodically retrain the model with new data and save the output to a log file.
+
+```bash
+poetry run watch
+```
+The log file store all the timestamps where the file has been modified and the model retrain
+```
+2023-12-29 08:36:40
+2023-12-29 08:37:13
+```
+
+## SUMMARY
 1. Success Metric(s):
 
--[X] Rank candidates based on a fitness score.
--[X] Re-rank candidates when a candidate is starred.
+- [x] Rank candidates based on a fitness score.
+- [x] Re-rank candidates when a candidate is starred.
 
 2. Bonus(es):
 
-- [X] We are interested in a robust algorithm, tell us how your solution works and show us how your ranking gets better with each starring action.
-  Implemented : Watchdog to know when to retrain the model. Starring = modifie le fichier csv en mettant un fit score de 1 à la personne choisi et en le déplacant en haut de la liste.
+- [x] We are interested in a robust algorithm, tell us how your solution works...
+  Answer : Done
+  
+- [x]: ...and show us how your ranking gets better with each starring action. 
+  Answer : Watchdog is employed to monitor changes in the dataset, indicating when it is time to retrain the model. The 'Starring' process here involves modifying the CSV file, assigning a fit score of 1 to the selected individual, and relocating them to the top of the list. We might decide not to save the most recent model (as done for now) if its score is not better than the previous one, for example."
 
 - [] How can we filter out candidates which in the first place should not be in this list? Can we determine a cut-off point that would work for other roles without losing high potential candidates?
+  Answer: 
 
--[x] Do you have any ideas that we should explore so that we can even automate this procedure to 
-  Answer : The process is already automate. The model is re-trained based on the starring process
+- [x] An automated process; the model is retrained based on starring actions. 
+  Answer : The process is already automated. The model is re-trained based on the starring process.
 
 ## Next steps
-- [] Finir la documentation des fonctions
-- [] Hyperparameter Tuning option 
-- [] Train-test split instead of training on the full csv
-- [] When watching the file, give more flexibility for the embedder
+ - [] Complete the documentation for functions.
+ - [] Implement hyperparameter tuning options.
+ - [] Introduce train-test split instead of training on the full CSV.
+ - [] Enhance flexibility for the embedder when watching the file.
+ - [] Make watchdog (module 3) run in the background

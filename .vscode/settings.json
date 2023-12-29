@@ -2,7 +2,8 @@
     "conventionalCommits.scopes": [
         "preprocessing",
         "fitness",
-        "ranker"
+        "ranker",
+        "watchdog"
     ],
     "python.analysis.extraPaths": [
         "./p3"
