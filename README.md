@@ -17,24 +17,12 @@ The pipeline comprises three key modules:
 3. Monitor the csv file and trigger retraining of the model upon modification (starring). Learning is incremental, so the most recent model is reused to start the training.
 
 ## 1. Fitness scores
-The fitness score is computed as a weighted average with default weights of 0.9 and 0.1, but these weights can be adjusted. In my personal perspective, I assign higher importance to job title (work experience) compared to the number of connections. Given two candidates, I favor the one with more experience, even if they have fewer connections.
+Le fitness score est une moyenne pondere de e. La ponderation par d.faut utiliser est .9 et .1. Personnellement je pense que le job title (experience de travail) est plus importante que le nombre de connection qui est pour moi un plus. Entre deux candidats, je prefere le candidat avec le plus d'experience même s'il a moins de connection. Mais les poids ne sont que des parametres, et peuvent etre ajustés.
+fitness =  0.9 x importance_job_tile + 0.1 x importance_connection.
+importance_job_tile =  cosine (job_title[vec], query[vec]) (betwen 0..1)
+importance_connection =  sklearn.MINMAX(connection_COL, min=0.5, max=1) (between 0.5..1)
 
-The fitness score formula is given by:
-
-> fitness = 0.9 × importance_job_tile + 0.1 × importance_connection
-
-The importance of job title is determined using cosine similarity between the job title vector and the query vector, ranging from 0 to 1:
-
-> importance_job_tile =  cosine (job_title[vec], query[vec])
-
-Connection importance is computed using Min-Max scaling on the connection column (ranging from 0.5 to 1).
-> importance_connection =  sklearn.MINMAX(connection_COL, min=0.5, max=1) 
-with :
-> COL[vec] = EMBEDDER(preprocessing(COL)). 
-
-The Embedder is choosed with the option ```−en/−et``` to choose a pretrained model from Hugging Face or a vectorizer from sklearn, such as CountVectorizer or TfidfVectorizer.
-
-The command to run this module is as follows:
+COL[vec] =  EMBEDDER(preprocessing(COL)). Embedder est fixe avec l'option -en/-et pour choisir un modele pretrainé de hugging face ou un vectorizer de sklearn comme countVctorizer ou Tdif
 
 ```bash
 (p3-py3.11) (base) \p3>poetry run cli -f  ".data\potential-talents - Aspiring human resources - seeking human resources.csv" -en albert-base-v2 -q "Aspiring human resources" --debug rank
