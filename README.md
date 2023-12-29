@@ -32,7 +32,7 @@ Connection importance is computed using Min-Max scaling on the connection column
 with :
 > COL[vec] = EMBEDDER(preprocessing(COL)). 
 
-The Embedder is choosed with the option ```−en/−et``` to choose a pretrained model from Hugging Face or a vectorizer from sklearn, such as CountVectorizer or TfidfVectorizer.
+The Embedder is selected using the option ```−en/−et```, allowing for the choice between a pretrained model from Hugging Face or a vectorizer from sklearn, such as CountVectorizer or TfidfVectorizer.
 
 The command to run this module is as follows:
 
