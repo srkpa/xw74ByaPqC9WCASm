@@ -114,10 +114,10 @@ The log file store all the timestamps where the file has been modified and the m
   Answer : Done
   
 - [x]: ...and show us how your ranking gets better with each starring action. 
-  Answer : Watchdog is employed to monitor changes in the dataset, indicating when it is time to retrain the model. The 'Starring' process here involves modifying the CSV file, assigning a fit score of 1 to the selected individual, and relocating them to the top of the list. We might decide not to save the most recent model (as done for now) if its score is not better than the previous one, for example."
+  Answer : Watchdog is employed to monitor changes in the dataset, indicating when it is time to retrain the model. The 'Starring' process here involves modifying the CSV file, assigning a fit score of 1 to the selected individual, and relocating them to the top of the list. We might decide not to save the most recent model (as done for now) if its score is not better than the previous one, for example.
 
-- [] How can we filter out candidates which in the first place should not be in this list? Can we determine a cut-off point that would work for other roles without losing high potential candidates?
-  Answer: 
+- [x] How can we filter out candidates which in the first place should not be in this list? Can we determine a cut-off point that would work for other roles without losing high potential candidates?
+  Answer: One can set a threshold of 50%, using cosine similarity between the job_title and query. A good fit should match at least 50% of the job description.
 
 - [x] An automated process; the model is retrained based on starring actions. 
   Answer : The process is already automated. The model is re-trained based on the starring process.
@@ -126,5 +126,5 @@ The log file store all the timestamps where the file has been modified and the m
  - [] Complete the documentation for functions.
  - [] Implement hyperparameter tuning options.
  - [] Introduce train-test split instead of training on the full CSV.
- - [] Enhance flexibility for the embedder when watching the file.
+ - [] Enhance flexibility for the embedder when watching (watchdog) the file.
  - [] Make watchdog (module 3) run in the background
